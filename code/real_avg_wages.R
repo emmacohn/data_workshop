@@ -20,3 +20,7 @@ avg_wage <- load_cps("org", 2000:2024, orgwgt, year, age, emp, wage, selfemp, se
   mutate(realwage = wage * (cpi2024/c_cpi_u)) %>%
   summarize(real_avg_wage = weighted.mean(realwage, w=orgwgt/12, na.rm=TRUE),
             .by=year)
+
+# Output to a csv in the output folder 
+write_csv(avg_wage, "./output/avg_wage.csv") 
+
