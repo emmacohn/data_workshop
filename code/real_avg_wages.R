@@ -4,6 +4,7 @@ library(usethis)
 library(skimr)
 library(labelled)
 library(realtalk)
+library(openxlsx2)
 
 # calculate median wage over time: load CPI data from realtalk
 cpi_data <- realtalk::c_cpi_u_annual
@@ -18,6 +19,13 @@ avg_wage <- load_cps("org", 2000:2024, orgwgt, year, age, emp, wage, selfemp, se
   left_join(cpi_data, by='year') %>%
   # inflation adjust wages
   mutate(realwage = wage * (cpi2024/c_cpi_u)) %>%
-  summarize(wage = weighted.mean(wage, w=orgwgt/12, na.rm=TRUE),
-    real_avg_wage = weighted.mean(realwage, w=orgwgt/12, na.rm=TRUE),
+  summarize(wage = MetricsWeighted::weighted_mean(wage, w=orgwgt/12, na.rm=TRUE),
+    real_avg_wage = MetricsWeighted::weighted_mean(realwage, w=orgwgt/12, na.rm=TRUE),
             .by=year)
+
+wb <- wb_workbook()
+
+wb$add_worksheet(sheet = "real_wage") $
+  add_data(x = avg_wage)
+
+wb_save(wb, "./output/real_annual_wages.xlsx")
